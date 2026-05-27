@@ -1,4 +1,5 @@
 import keywordTrackingModel from "../Models/keyword.model.js";
+import { keywordTracking } from "../Services/keywordTracker.service.js";
 
 // Add Keyword to track ranking
 export const addKeyword = async (req, res) => {
@@ -47,12 +48,27 @@ export const addKeyword = async (req, res) => {
       status: "checking",
     });
 
-    return res.status(201).json({
+    res.status(201).json({
       success: true,
       message: "Keyword Tracking Started",
       tracking,
     });
-  } catch (error) {}
+
+    keywordTracking(tracking);
+  } catch (error) {
+    console.error("Keyword Adding Error: ", error.message);
+    if (error.code === 11000) {
+      return res.status(400).json({
+        success: false,
+        message: "Already tracking this keyword",
+      });
+    }
+
+    return res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
 };
 
 // Get all tracked keywords for user
